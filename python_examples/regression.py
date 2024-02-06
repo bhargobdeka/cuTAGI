@@ -61,7 +61,9 @@ class Regression:
                 decaying_factor=self.net_prop.decay_factor_sigma_v,
                 curr_iter=epoch,
             )
+            # self.net_prop.sigma_v = 0.3
             V_batch = V_batch * 0.0 + self.net_prop.sigma_v**2
+            # V_batch = self.net_prop.sigma_v**2
 
             for i in range(num_iter):
                 # Get data
@@ -72,6 +74,13 @@ class Regression:
                 # Feed forward
                 self.network.feed_forward(x_batch, Sx_batch, Sx_f_batch)
 
+                # outputs from the network
+                ma, va = self.network.get_network_outputs()
+                
+                # print(f"The expected values are: {ma}")
+                # print(f"The variance values are: {va}")
+                
+                
                 # Update hidden states
                 self.network.state_feed_backward(y_batch, V_batch, ud_idx_batch)
 
@@ -79,7 +88,11 @@ class Regression:
                 self.network.param_feed_backward()
 
                 # Loss
-                norm_pred, _ = self.network.get_network_predictions()
+                norm_pred, v_pred = self.network.get_network_predictions()
+                
+                # print(f"The normalized predictions are: {norm_pred}")
+                # print(f"The variance predictions are: {v_pred}")
+                
                 pred = normalizer.unstandardize(
                     norm_data=norm_pred,
                     mu=self.data_loader["y_norm_param_1"],
@@ -91,8 +104,18 @@ class Regression:
                     std=self.data_loader["y_norm_param_2"],
                 )
                 mse = metric.mse(pred, obs)
+                rmse = mse**0.5
+                log_lik = metric.log_likelihood(
+                    prediction=pred, observation=obs, std=np.sqrt(v_pred)
+                )
                 pbar.set_description(
                     f"Epoch# {epoch: 0}|{i * batch_size + len(x_batch):>5}|{num_data: 1}\t mse: {mse:>7.2f}"
+                )
+                pbar.set_description(
+                    f"Epoch# {epoch: 0}|{i * batch_size + len(x_batch):>5}|{num_data: 1}\t rmse: {rmse:>7.2f}"
+                )
+                pbar.set_description(
+                    f"Epoch# {epoch: 0}|{i * batch_size + len(x_batch):>5}|{num_data: 1}\t log_lik: {log_lik:>7.2f}"
                 )
 
     def predict(self, std_factor: int = 1) -> None:
@@ -130,11 +153,11 @@ class Regression:
             norm_std=std_predictions, std=self.data_loader["y_norm_param_2"]
         )
 
-        x_test = normalizer.unstandardize(
-            norm_data=x_test,
-            mu=self.data_loader["x_norm_param_1"],
-            std=self.data_loader["x_norm_param_2"],
-        )
+        # x_test = normalizer.unstandardize(
+        #     norm_data=x_test,
+        #     mu=self.data_loader["x_norm_param_1"],
+        #     std=self.data_loader["x_norm_param_2"],
+        # )
         y_test = normalizer.unstandardize(
             norm_data=y_test,
             mu=self.data_loader["y_norm_param_1"],
@@ -143,6 +166,7 @@ class Regression:
 
         # Compute log-likelihood
         mse = metric.mse(mean_predictions, y_test)
+        rmse = mse**0.5
         log_lik = metric.log_likelihood(
             prediction=mean_predictions, observation=y_test, std=std_predictions
         )
@@ -164,7 +188,10 @@ class Regression:
         print("#############")
         print(f"MSE           : {mse: 0.2f}")
         print(f"Log-likelihood: {log_lik: 0.2f}")
-
+        print(f"RMSE          : {rmse: 0.2f}")
+        
+        return mse, log_lik, rmse
+    
     def compute_derivatives(
         self, layer: int = 0, truth_derv_file: Union[None, str] = None
     ) -> None:

@@ -22,8 +22,10 @@ Returns:
     bool
 */
 {
-    for (int i = 0; i < layers.size(); i++) {
-        if (layers[i] == layer_names.mha) {
+    for (int i = 0; i < layers.size(); i++)
+    {
+        if (layers[i] == layer_names.mha)
+        {
             return true;
         }
     }
@@ -41,8 +43,10 @@ Returns:
     bool
 */
 {
-    for (int i = 0; i < layers.size(); i++) {
-        if (layers[i] == layer_names.conv) {
+    for (int i = 0; i < layers.size(); i++)
+    {
+        if (layers[i] == layer_names.conv)
+        {
             return true;
         }
     }
@@ -53,8 +57,10 @@ bool is_tconv(std::vector<int> &layers, LayerLabel &layer_names)
 /* Does network contain the transpose convolutional layer layer?
  */
 {
-    for (int i = 0; i < layers.size(); i++) {
-        if (layers[i] == layer_names.tconv) {
+    for (int i = 0; i < layers.size(); i++)
+    {
+        if (layers[i] == layer_names.tconv)
+        {
             return true;
         }
     }
@@ -65,8 +71,10 @@ bool is_fc(std::vector<int> &layers, LayerLabel &layer_names)
 /* Does network contain the fully-connected layer?
  */
 {
-    for (int i = 0; i < layers.size(); i++) {
-        if (layers[i] == layer_names.fc) {
+    for (int i = 0; i < layers.size(); i++)
+    {
+        if (layers[i] == layer_names.fc)
+        {
             return true;
         }
     }
@@ -77,8 +85,10 @@ bool is_lstm(std::vector<int> &layers, LayerLabel &layer_names)
 /* Does network contain the lstm layer?
  */
 {
-    for (int i = 0; i < layers.size(); i++) {
-        if (layers[i] == layer_names.lstm) {
+    for (int i = 0; i < layers.size(); i++)
+    {
+        if (layers[i] == layer_names.lstm)
+        {
             return true;
         }
     }
@@ -89,9 +99,11 @@ bool is_leakyrelu(std::vector<int> &activations)
 /* Does network contain the leakyrely activation?
  */
 {
-    for (int i = 0; i < activations.size(); i++) {
+    for (int i = 0; i < activations.size(); i++)
+    {
         // TODO: Put label instead of integer for leakyrelu
-        if (activations[i] == 6) {
+        if (activations[i] == 6)
+        {
             return true;
         }
     }
@@ -121,13 +133,18 @@ std::tuple<int, int> compute_downsample_img_size(int kernel, int stride, int wi,
     int wo, ho, nom_w, nom_h;
 
     // Compute nominator of conv. formulation given a padding type
-    if (pad_type == 1) {
+    if (pad_type == 1)
+    {
         nom_w = wi - kernel + 2 * pad;
         nom_h = hi - kernel + 2 * pad;
-    } else if (pad_type == 2) {
+    }
+    else if (pad_type == 2)
+    {
         nom_w = wi - kernel + pad;
         nom_h = hi - kernel + pad;
-    } else {
+    }
+    else
+    {
         nom_w = wi - kernel;
         nom_h = hi - kernel;
     }
@@ -135,10 +152,13 @@ std::tuple<int, int> compute_downsample_img_size(int kernel, int stride, int wi,
     // Check validity of the conv. hyper-parameters such as wi, hi, kernel,
     // stride
 
-    if (nom_w % stride == 0 && nom_h % stride == 0) {
+    if (nom_w % stride == 0 && nom_h % stride == 0)
+    {
         wo = nom_w / stride + 1;
         ho = nom_h / stride + 1;
-    } else {
+    }
+    else
+    {
         throw std::invalid_argument(
             "Input hyper-parameters for conv. layer are invalid ");
     }
@@ -165,7 +185,8 @@ std::tuple<int, int> compute_upsample_img_size(int kernel, int stride, int wi,
 {
     int wo, ho, nom_w, nom_h;
     // Compute nominator of tconv. formulation given a padding type
-    if (pad_type == 1) {
+    if (pad_type == 1)
+    {
         wo = stride * (wi - 1) + kernel - 2 * pad;
         ho = stride * (hi - 1) + kernel - 2 * pad;
         nom_w = wo - kernel + 2 * pad;
@@ -174,14 +195,16 @@ std::tuple<int, int> compute_upsample_img_size(int kernel, int stride, int wi,
 
     // Check validity of the conv. hyper-parameters such as wi, hi, kernel,
     // stride
-    else if (pad_type == 2) {
+    else if (pad_type == 2)
+    {
         wo = stride * (wi - 1) + kernel - pad;
         ho = stride * (hi - 1) + kernel - pad;
         nom_w = wo - kernel + pad;
         nom_h = ho - kernel + pad;
     }
 
-    if (nom_w % stride != 0 || nom_h % stride != 0) {
+    if (nom_w % stride != 0 || nom_h % stride != 0)
+    {
         throw std::invalid_argument(
             "Input hyper-parameters for tconv. layer are invalid ");
     }
@@ -204,9 +227,12 @@ std::tuple<int, int> get_number_param_fc(int ni, int no, bool use_bias)
 {
     int n_w, n_b;
     n_w = ni * no;
-    if (use_bias) {
+    if (use_bias)
+    {
         n_b = no;
-    } else {
+    }
+    else
+    {
         n_b = 0;
     }
 
@@ -230,9 +256,12 @@ std::tuple<int, int> get_number_param_conv(int kernel, int fi, int fo,
 {
     int n_w, n_b;
     n_w = kernel * kernel * fi * fo;
-    if (use_bias) {
+    if (use_bias)
+    {
         n_b = fo;
-    } else {
+    }
+    else
+    {
         n_b = 0;
     }
 
@@ -264,7 +293,8 @@ std::tuple<int, int> get_number_param_lstm(int ni, int no, bool use_bias)
 {
     int n_w = 4 * no * (ni + no);
     int n_b = 0;
-    if (use_bias) {
+    if (use_bias)
+    {
         n_b = 4 * no;
     }
     return {n_w, n_b};
@@ -283,13 +313,17 @@ void get_similar_layer(Network &net)
 {
     int num_layers = net.layers.size();
     int label = 0;
-    for (int k = 0; k < net.layers.size(); k++) {
+    for (int k = 0; k < net.layers.size(); k++)
+    {
         net.similar_layers[k] = k;
     }
 
-    for (int i = 0; i < num_layers; i++) {
-        if (net.similar_layers[i] == i) {
-            for (int j = 0; j < num_layers; j++) {
+    for (int i = 0; i < num_layers; i++)
+    {
+        if (net.similar_layers[i] == i)
+        {
+            for (int j = 0; j < num_layers; j++)
+            {
                 if (net.widths[j] == net.widths[i] &&
                     net.heights[j] == net.heights[i] &&
                     net.kernels[j] == net.kernels[i] &&
@@ -297,7 +331,8 @@ void get_similar_layer(Network &net)
                     net.filters[j] == net.filters[i] &&
                     net.pads[j] == net.pads[i] &&
                     net.pad_types[j] == net.pad_types[i] &&
-                    net.layers[j] != net.layer_names.fc) {
+                    net.layers[j] != net.layer_names.fc)
+                {
                     net.similar_layers[j] = i;
                 }
             }
@@ -310,15 +345,19 @@ void set_idx_to_similar_layer(std::vector<int> &similar_layers,
 /* Set indext for each layer based on the similar features
  */
 {
-    for (int j = 0; j < similar_layers.size(); j++) {
+    for (int j = 0; j < similar_layers.size(); j++)
+    {
         idx[j] = idx[similar_layers[j]];
     }
 }
 
-int get_first_shortcut_layer(std::vector<int> shortcut) {
+int get_first_shortcut_layer(std::vector<int> shortcut)
+{
     int first_shortcut = -1;
-    for (int i = 0; i < shortcut.size(); i++) {
-        if (shortcut[i] > 1) {
+    for (int i = 0; i < shortcut.size(); i++)
+    {
+        if (shortcut[i] > 1)
+        {
             first_shortcut = shortcut[i];
             break;
         }
@@ -326,11 +365,14 @@ int get_first_shortcut_layer(std::vector<int> shortcut) {
     return first_shortcut;
 }
 
-int count_layer(std::vector<int> &layers, int layer_name) {
+int count_layer(std::vector<int> &layers, int layer_name)
+{
     int num_layers = layers.size();
     int count = 0;
-    for (int i = 0; i < num_layers; i++) {
-        if (layers[i] == layer_name) {
+    for (int i = 0; i < num_layers; i++)
+    {
+        if (layers[i] == layer_name)
+        {
             count++;
         }
     }
@@ -400,14 +442,15 @@ std::tuple<std::vector<float>, std::vector<float>> gaussian_param_init(
     std::random_device rd;
 
     // Mersenne twister PRNG - seed
-    std::mt19937 gen(rd());
+    std::mt19937 gen(rd()); // rd()
 
     // Initialize pointers
     std::vector<float> S(N);
     std::vector<float> m(N);
 
     // Weights
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         // Variance
         S[i] = gain * pow(scale, 2);
 
@@ -441,18 +484,22 @@ std::tuple<std::vector<float>, std::vector<float>> gaussian_param_init_ni(
     std::random_device rd;
 
     // Mersenne twister PRNG - seed
-    std::mt19937 gen(rd());
+    std::mt19937 gen(rd()); // rd()
 
     // Initialize pointers
     std::vector<float> S(N);
     std::vector<float> m(N);
 
     // Weights
-    for (int i = 0; i < N; i++) {
+    for (int i = 0; i < N; i++)
+    {
         // Variance for output and noise's hidden states
-        if (i < N / 2) {
+        if (i < N / 2)
+        {
             S[i] = gain * pow(scale, 2);
-        } else {
+        }
+        else
+        {
             S[i] = noise_gain * pow(scale, 2);
             scale = pow(S[i], 0.5);
             int a = 0;
@@ -490,33 +537,43 @@ void get_net_props(Network &net)
     net.n_state_sc = 0;
     net.init_sc = get_first_shortcut_layer(net.shortcuts);
     int n_state;
-    if (is_lstm(net.layers, net.layer_names)) {
+    if (is_lstm(net.layers, net.layer_names))
+    {
         net.num_lstm_states = num_inputs;
         net.num_max_lstm_states = num_inputs;
     }
 
-    for (int j = 1; j < num_layers; j++) {
+    for (int j = 1; j < num_layers; j++)
+    {
         // Biases are not used for this layer if the next two layer is
         // normalization layer
         if (j < num_layers - 2 && (net.layers[j] != net.layer_names.ln ||
-                                   net.layers[j] != net.layer_names.bn)) {
+                                   net.layers[j] != net.layer_names.bn))
+        {
             if (net.layers[j + 1] == net.layer_names.ln ||
-                net.layers[j + 1] == net.layer_names.bn) {
+                net.layers[j + 1] == net.layer_names.bn)
+            {
                 use_bias = false;
-            } else {
+            }
+            else
+            {
                 use_bias = true;
             }
-        } else {
+        }
+        else
+        {
             use_bias = true;
         }
 
         // Full connected layer
-        if (net.layers[j] == net.layer_names.fc) {
+        if (net.layers[j] == net.layer_names.fc)
+        {
             int ni = net.nodes[j - 1];
             int no = net.nodes[j];
 
             // TODO: Is there any better way to modify number of nodes?
-            if (net.layers[j - 1] == net.layer_names.lstm) {
+            if (net.layers[j - 1] == net.layer_names.lstm)
+            {
                 ni = net.nodes[j - 1] * net.input_seq_len;
                 no = net.nodes[j];
             }
@@ -530,11 +587,11 @@ void get_net_props(Network &net)
             n_state = no * net.batch_size;
             net.n_state += n_state;
             net.n_max_state = std::max(n_state, net.n_max_state);
-
         }
 
         // Convolutional layer
-        else if (net.layers[j] == net.layer_names.conv) {
+        else if (net.layers[j] == net.layer_names.conv)
+        {
             // Compute the image size
             std::tie(net.widths[j], net.heights[j]) =
                 compute_downsample_img_size(
@@ -554,11 +611,11 @@ void get_net_props(Network &net)
             n_state = net.nodes[j] * net.batch_size;
             net.n_state += n_state;
             net.n_max_state = std::max(n_state, net.n_max_state);
-
         }
 
         // Transpose convolutional layers
-        else if (net.layers[j] == net.layer_names.tconv) {
+        else if (net.layers[j] == net.layer_names.tconv)
+        {
             // Compute the image size
             std::tie(net.widths[j], net.heights[j]) = compute_upsample_img_size(
                 net.kernels[j - 1], net.strides[j - 1], net.widths[j - 1],
@@ -580,7 +637,8 @@ void get_net_props(Network &net)
         }
         // Pooling layer
         else if (net.layers[j] == net.layer_names.mp ||
-                 net.layers[j] == net.layer_names.ap) {
+                 net.layers[j] == net.layer_names.ap)
+        {
             // Compute the image size
             std::tie(net.widths[j], net.heights[j]) =
                 compute_downsample_img_size(
@@ -595,20 +653,23 @@ void get_net_props(Network &net)
             n_state = net.nodes[j] * net.batch_size;
             net.n_state += n_state;
             net.n_max_state = std::max(n_state, net.n_max_state);
-
         }
         // Layernorm layer
-        else if (net.layers[j] == net.layer_names.ln) {
+        else if (net.layers[j] == net.layer_names.ln)
+        {
             // Compute the image size
             net.widths[j] = net.widths[j - 1];
             net.heights[j] = net.heights[j - 1];
 
             // Number of weights and biases
-            if (net.layers[j - 1] == net.layer_names.fc) {
+            if (net.layers[j - 1] == net.layer_names.fc)
+            {
                 std::tie(net.num_weights[j], net.num_biases[j]) =
                     get_number_param_norm(net.nodes[j - 1]);
-            } else if (net.layers[j - 1] == net.layer_names.conv ||
-                       net.layers[j - 1] == net.layer_names.tconv) {
+            }
+            else if (net.layers[j - 1] == net.layer_names.conv ||
+                     net.layers[j - 1] == net.layer_names.tconv)
+            {
                 std::tie(net.num_weights[j], net.num_biases[j]) =
                     get_number_param_norm(net.filters[j - 1]);
             }
@@ -625,25 +686,28 @@ void get_net_props(Network &net)
             n_state = net.nodes[j] * net.batch_size;
             net.n_state += n_state;
             net.n_max_state = std::max(n_state, net.n_max_state);
-
         }
 
         // Batchnorm layer
-        else if (net.layers[j] == net.layer_names.bn) {
+        else if (net.layers[j] == net.layer_names.bn)
+        {
             // Compute the image size
             net.widths[j] = net.widths[j - 1];
             net.heights[j] = net.heights[j - 1];
 
             // Number of weights and biases
-            if (net.layers[j - 1] == net.layer_names.fc) {
+            if (net.layers[j - 1] == net.layer_names.fc)
+            {
                 std::tie(net.num_weights[j], net.num_biases[j]) =
                     get_number_param_norm(net.nodes[j - 1]);
 
                 // Index position running average
                 ra_pos[j] = net.nodes[j];
                 net.n_ra += net.nodes[j];
-            } else if (net.layers[j - 1] == net.layer_names.conv ||
-                       net.layers[j - 1] == net.layer_names.tconv) {
+            }
+            else if (net.layers[j - 1] == net.layer_names.conv ||
+                     net.layers[j - 1] == net.layer_names.tconv)
+            {
                 std::tie(net.num_weights[j], net.num_biases[j]) =
                     get_number_param_norm(net.filters[j - 1]);
 
@@ -662,7 +726,8 @@ void get_net_props(Network &net)
             net.n_max_state = std::max(n_state, net.n_max_state);
         }
         // LSTM layer
-        else if (net.layers[j] == net.layer_names.lstm) {
+        else if (net.layers[j] == net.layer_names.lstm)
+        {
             std::tie(net.num_weights[j], net.num_biases[j]) =
                 get_number_param_lstm(net.nodes[j - 1], net.nodes[j], use_bias);
 
@@ -679,10 +744,10 @@ void get_net_props(Network &net)
             net.n_max_state = std::max(n_state, net.n_max_state);
             z_pos_lstm[j] =
                 net.nodes[j - 1] * net.input_seq_len * net.batch_size;
-
         }
         // Multi-head self-attention
-        else if (net.layers[j] == net.layer_names.mha) {
+        else if (net.layers[j] == net.layer_names.mha)
+        {
             // TODO: put a check if node[j-1] is diffrent than node[j]
             int sub_idx = get_sub_layer_idx(net.layers, j, net.layer_names.mha);
 
@@ -700,20 +765,23 @@ void get_net_props(Network &net)
             n_state = net.nodes[j] * net.batch_size;
             net.n_state += n_state;
             net.n_max_state = std::max(n_state, net.n_max_state);
-
-        } else {
+        }
+        else
+        {
             throw std::invalid_argument("Layer is not valid - net_prop.cpp");
         }
 
         // Residual networks. TODO: it has not support lstm yet
-        if (net.shortcuts[j] > -1) {
+        if (net.shortcuts[j] > -1)
+        {
             sc_pos[j + 1] = net.batch_size * net.nodes[j];
             net.n_state_sc += net.batch_size * net.nodes[j];
         }
         if (net.shortcuts[j] > -1 &&
             (net.filters[net.shortcuts[j]] != net.filters[j] ||
              net.widths[net.shortcuts[j]] != net.widths[j] ||
-             net.heights[net.shortcuts[j]] != net.heights[j])) {
+             net.heights[net.shortcuts[j]] != net.heights[j]))
+        {
             use_bias = true;
             // Compute number of weights and biases
             std::tie(net.num_weights_sc[net.shortcuts[j]],
@@ -725,13 +793,15 @@ void get_net_props(Network &net)
         // Compute overlap
         if (net.kernels[j - 1] == net.strides[j - 1] ||
             (net.kernels[j - 1] == net.widths[j - 1] &&
-             net.strides[j - 1] == 1)) {
+             net.strides[j - 1] == 1))
+        {
             net.overlap[j - 1] = 0;
         }
     }
 
     // Fist shortcut
-    if (net.init_sc > -1) {
+    if (net.init_sc > -1)
+    {
         net.n_state_sc += net.nodes[net.init_sc] * net.batch_size;
         sc_pos[net.init_sc + 1] = net.nodes[net.init_sc] * net.batch_size;
     }
@@ -756,37 +826,48 @@ void net_default(Network &net)
 {
     int num_layers = net.layers.size();
     // Number of inputs & outputs
-    if (net.noise_type.compare("heteros") == 0) {
+    if (net.noise_type.compare("heteros") == 0)
+    {
         net.n_y = net.nodes.back() / 2;
-    } else {
+    }
+    else
+    {
         net.n_y = net.nodes.back();
     }
     net.n_x = net.nodes.front();
     net.cap_factor = get_cap_factor(net.batch_size);
 
     // Network architecture
-    if (net.widths.size() == 0) {
+    if (net.widths.size() == 0)
+    {
         net.widths.resize(num_layers, 0);
     }
-    if (net.heights.size() == 0) {
+    if (net.heights.size() == 0)
+    {
         net.heights.resize(num_layers, 0);
     }
-    if (net.filters.size() == 0) {
+    if (net.filters.size() == 0)
+    {
         net.filters.resize(num_layers, 0);
     }
-    if (net.kernels.size() == 0) {
+    if (net.kernels.size() == 0)
+    {
         net.kernels.resize(num_layers, 1);
     }
-    if (net.strides.size() == 0) {
+    if (net.strides.size() == 0)
+    {
         net.strides.resize(num_layers, 1);
     }
-    if (net.pads.size() == 0) {
+    if (net.pads.size() == 0)
+    {
         net.pads.resize(num_layers, 1);
     }
-    if (net.pad_types.size() == 0) {
+    if (net.pad_types.size() == 0)
+    {
         net.pad_types.resize(num_layers, 0);
     }
-    if (net.shortcuts.size() == 0) {
+    if (net.shortcuts.size() == 0)
+    {
         net.shortcuts.resize(num_layers, -1);
     }
 
@@ -798,10 +879,12 @@ void net_default(Network &net)
     net.similar_layers.resize(num_layers, 0);
     net.overlap.resize(num_layers, 1);
 
-    if (net.gain_w.size() == 0) {
+    if (net.gain_w.size() == 0)
+    {
         net.gain_w.resize(num_layers, 1);
     }
-    if (net.gain_b.size() == 0) {
+    if (net.gain_b.size() == 0)
+    {
         net.gain_b.resize(num_layers, 1);
     }
     net.w_pos.resize(num_layers, 0);
@@ -813,27 +896,32 @@ void net_default(Network &net)
     net.row_w_sc.resize(num_layers, 0);
     net.col_z_sc.resize(num_layers, 0);
 
-    if (net.sigma_v_min == 0) {
+    if (net.sigma_v_min == 0)
+    {
         net.sigma_v_min = net.sigma_v;
     }
 
     // Network's indices
-    if (net.activations.back() != net.act_names.hr_softmax) {
+    if (net.activations.back() != net.act_names.hr_softmax)
+    {
         net.nye = net.nodes.back();
         net.is_idx_ud = false;
     }
     // if (net.nye != net.nodes.back() && net.nye > 0) {
     //     net.is_idx_ud = true;
     // }
-    if (net.Fmwa_1_col.size() == 0) {
+    if (net.Fmwa_1_col.size() == 0)
+    {
         net.Fmwa_1_col.resize(num_layers, 0);
     }
-    if (net.FCzwa_1_col.size() == 0) {
+    if (net.FCzwa_1_col.size() == 0)
+    {
         net.FCzwa_1_col.resize(num_layers, 0);
     }
 }
 
-void initialize_derivative_state(Network &net, NetState &state) {
+void initialize_derivative_state(Network &net, NetState &state)
+{
     int num_max_nodes = net.n_max_state / net.batch_size;
     state.derv_state.mda.resize(net.n_state, 1);
     state.derv_state.Sda.resize(net.n_state, 0);
@@ -860,28 +948,30 @@ void initialize_derivative_state(Network &net, NetState &state) {
         num_max_nodes * num_max_nodes * net.batch_size, 0);
 }
 
-NetState initialize_net_states(Network &net_prop) {
+NetState initialize_net_states(Network &net_prop)
+{
     NetState state;
     // TODO: Double check why Sz, Sa are initialzied at 1
 
-    state.mz.resize(net_prop.n_state, 0);  // Mean of hidden states
-    state.Sz.resize(net_prop.n_state, 1);  // Variance of hidden states
-    state.ma.resize(net_prop.n_state, 0);  // Mean of activation units
-    state.Sa.resize(net_prop.n_state, 1);  // Variance of activation units
-    state.J.resize(net_prop.n_state, 1);   // Diagonal Jacobian matrix
+    state.mz.resize(net_prop.n_state, 0); // Mean of hidden states
+    state.Sz.resize(net_prop.n_state, 1); // Variance of hidden states
+    state.ma.resize(net_prop.n_state, 0); // Mean of activation units
+    state.Sa.resize(net_prop.n_state, 1); // Variance of activation units
+    state.J.resize(net_prop.n_state, 1);  // Diagonal Jacobian matrix
     // Mean of identity's hidden states
     state.msc.resize(net_prop.n_state_sc, 0);
     // Variance of identity's hidden states
     state.Ssc.resize(net_prop.n_state_sc, 1);
-    state.mdsc.resize(net_prop.n_state_sc, 0);  // Mean of residual
-    state.Sdsc.resize(net_prop.n_state_sc, 1);  // Variance of residual
+    state.mdsc.resize(net_prop.n_state_sc, 0); // Mean of residual
+    state.Sdsc.resize(net_prop.n_state_sc, 1); // Variance of residual
     // Mean of batch and layer normalization
     state.mra.resize(net_prop.n_ra, 0);
     // Variance of batch and layer normalization
     state.Sra.resize(net_prop.n_ra, 1);
 
     // LSTM state
-    if (net_prop.num_lstm_states > 0) {
+    if (net_prop.num_lstm_states > 0)
+    {
         state.lstm.mha.resize(
             net_prop.num_max_lstm_states + net_prop.num_max_lstm_states, 0);
         state.lstm.Sha.resize(
@@ -912,7 +1002,8 @@ NetState initialize_net_states(Network &net_prop) {
     }
 
     // TODO: Is there a better way to initialize the full covariance matrix?
-    if (net_prop.is_full_cov) {
+    if (net_prop.is_full_cov)
+    {
         int n = net_prop.n_max_state / net_prop.batch_size;
         state.Sz_f.resize((n * (n + 1) / 2) * net_prop.batch_size, 0);
         state.Sa_f.resize((n * (n + 1) / 2) * net_prop.batch_size, 0);
@@ -921,7 +1012,8 @@ NetState initialize_net_states(Network &net_prop) {
 
     // Noise inference
     if (net_prop.noise_type.compare("homosce") == 0 ||
-        net_prop.noise_type.compare("heteros") == 0) {
+        net_prop.noise_type.compare("heteros") == 0)
+    {
         int n_noise = net_prop.n_y * net_prop.batch_size;
         state.noise_state.ma_mu.resize(n_noise, 0);
         state.noise_state.Sa_mu.resize(n_noise, 0);
@@ -942,19 +1034,22 @@ NetState initialize_net_states(Network &net_prop) {
         state.noise_state.delta_mz_v2b.resize(n_noise, 0);
         state.noise_state.delta_Sz_v2b.resize(n_noise, 0);
     }
-    if (net_prop.noise_type.compare("homosce") == 0) {
+    if (net_prop.noise_type.compare("homosce") == 0)
+    {
         set_homosce_noise_param(net_prop.mu_v2b, net_prop.sigma_v2b,
                                 state.noise_state.ma_v2b_prior,
                                 state.noise_state.Sa_v2b_prior);
     }
 
     // Derivative state
-    if (net_prop.collect_derivative) {
+    if (net_prop.collect_derivative)
+    {
         initialize_derivative_state(net_prop, state);
     }
 
     // Closed-form softmax
-    if (net_prop.activations.back() == net_prop.act_names.remax) {
+    if (net_prop.activations.back() == net_prop.act_names.remax)
+    {
         int n_output = net_prop.nodes.back() * net_prop.batch_size;
         state.remax.mu_m.resize(n_output, 0);
         state.remax.var_m.resize(n_output, 0);
@@ -971,7 +1066,8 @@ NetState initialize_net_states(Network &net_prop) {
     }
 
     // Multi-head attention
-    if (is_mha(net_prop.layers, net_prop.layer_names)) {
+    if (is_mha(net_prop.layers, net_prop.layer_names))
+    {
         init_multi_head_attention_states(state.mha, net_prop.mha,
                                          net_prop.batch_size);
     }
@@ -982,7 +1078,8 @@ NetState initialize_net_states(Network &net_prop) {
 //////////////////////////////////////
 // INITIALIZE PARAMETERS
 /////////////////////////////////////
-Param initialize_param(Network &net) {
+Param initialize_param(Network &net)
+{
     /*
      * Initialize weights and niases for Network
      *
@@ -1010,7 +1107,8 @@ Param initialize_param(Network &net) {
     p.mb_sc.resize(tot_biases_sc, 0);
     p.Sb_sc.resize(tot_biases_sc, 0);
 
-    for (int j = 1; j < num_layers; j++) {
+    for (int j = 1; j < num_layers; j++)
+    {
         float scale = 0;
         float fan_in = 1;
         float fan_out = 0;
@@ -1020,42 +1118,57 @@ Param initialize_param(Network &net) {
         std::vector<float> Sb_j;
 
         // Full-connected layer
-        if (net.layers[j] == net.layer_names.fc) {
-            if (net.layers[j - 1] == net.layer_names.lstm) {
+        if (net.layers[j] == net.layer_names.fc)
+        {
+            if (net.layers[j - 1] == net.layer_names.lstm)
+            {
                 fan_in = net.nodes[j - 1] * net.input_seq_len;
-            } else {
+            }
+            else
+            {
                 fan_in = net.nodes[j - 1];
             }
             fan_out = net.nodes[j];
 
             // Compute variance
-            if (net.init_method.compare("Xavier") == 0) {
+            if (net.init_method.compare("Xavier") == 0)
+            {
                 scale = xavier_init(fan_in, fan_out);
-            } else {
+            }
+            else
+            {
                 scale = he_init(fan_in);
             }
 
             // Weight
-            if (net.num_weights[j] > 0) {
+            if (net.num_weights[j] > 0)
+            {
                 if (net.noise_type.compare("heteros") == 0 &&
-                    j == num_layers - 1) {
+                    j == num_layers - 1)
+                {
                     std::tie(mw_j, Sw_j) = gaussian_param_init_ni(
                         scale, net.gain_w[j], net.noise_gain,
                         net.num_weights[j]);
-                } else {
+                }
+                else
+                {
                     std::tie(mw_j, Sw_j) = gaussian_param_init(
                         scale, net.gain_w[j], net.num_weights[j]);
                 }
             }
 
             // Biases
-            if (net.num_biases[j] > 0) {
+            if (net.num_biases[j] > 0)
+            {
                 if (net.noise_type.compare("heteros") == 0 &&
-                    j == num_layers - 1) {
+                    j == num_layers - 1)
+                {
                     std::tie(mb_j, Sb_j) = gaussian_param_init_ni(
                         scale, net.gain_b[j], net.noise_gain,
                         net.num_biases[j]);
-                } else {
+                }
+                else
+                {
                     std::tie(mb_j, Sb_j) = gaussian_param_init(
                         scale, net.gain_b[j], net.num_biases[j]);
                 }
@@ -1063,72 +1176,88 @@ Param initialize_param(Network &net) {
         }
         // Convolutional layer
         else if (net.layers[j] == net.layer_names.conv ||
-                 net.layers[j] == net.layer_names.tconv) {
+                 net.layers[j] == net.layer_names.tconv)
+        {
             fan_in = pow(net.kernels[j - 1], 2) * net.filters[j - 1];
             fan_out = pow(net.kernels[j - 1], 2) * net.filters[j];
 
             // Compute variance
             if (net.init_method.compare("Xavier") == 0 ||
-                net.init_method.compare("xavier") == 0) {
+                net.init_method.compare("xavier") == 0)
+            {
                 scale = xavier_init(fan_in, fan_out);
-            } else {
+            }
+            else
+            {
                 scale = he_init(fan_in);
             }
 
             // Weight
-            if (net.num_weights[j] > 0) {
+            if (net.num_weights[j] > 0)
+            {
                 std::tie(mw_j, Sw_j) = gaussian_param_init(scale, net.gain_w[j],
                                                            net.num_weights[j]);
             }
 
             // Biases
-            if (net.num_biases[j] > 0) {
+            if (net.num_biases[j] > 0)
+            {
                 std::tie(mb_j, Sb_j) = gaussian_param_init(scale, net.gain_b[j],
                                                            net.num_biases[j]);
             }
         }
         // Normalization layer
         else if (net.layers[j] == net.layer_names.bn ||
-                 net.layers[j] == net.layer_names.ln) {
+                 net.layers[j] == net.layer_names.ln)
+        {
             // Weight
-            if (net.num_weights[j] > 0) {
+            if (net.num_weights[j] > 0)
+            {
                 mw_j.resize(net.num_weights[j], 1);
                 Sw_j.resize(net.num_weights[j], 1);
             }
 
             // Biases
-            if (net.num_biases[j] > 0) {
+            if (net.num_biases[j] > 0)
+            {
                 mb_j.resize(net.num_biases[j], 0);
                 Sb_j.resize(net.num_biases[j], 0.0001f);
             }
         }
         // LSTM layer
-        else if (net.layers[j] == net.layer_names.lstm) {
+        else if (net.layers[j] == net.layer_names.lstm)
+        {
             fan_in = net.nodes[j - 1] + net.nodes[j];
             fan_out = net.nodes[j];
 
             // Variance
             if (net.init_method.compare("Xavier") == 0 ||
-                net.init_method.compare("xavier") == 0) {
+                net.init_method.compare("xavier") == 0)
+            {
                 scale = xavier_init(fan_in, fan_out);
-            } else {
+            }
+            else
+            {
                 scale = he_init(fan_in);
             }
 
             // Weight
-            if (net.num_weights[j] > 0) {
+            if (net.num_weights[j] > 0)
+            {
                 std::tie(mw_j, Sw_j) = gaussian_param_init(scale, net.gain_w[j],
                                                            net.num_weights[j]);
             }
 
             // Biases
-            if (net.num_biases[j] > 0) {
+            if (net.num_biases[j] > 0)
+            {
                 std::tie(mb_j, Sb_j) = gaussian_param_init(scale, net.gain_b[j],
                                                            net.num_biases[j]);
             }
         }
         // MHA layer
-        else if (net.layers[j] == net.layer_names.mha) {
+        else if (net.layers[j] == net.layer_names.mha)
+        {
             // TODO: Add different scale for input & output projection
             // int sub_idx = get_sub_layer_idx(net.layers, j,
             // net.layer_names.mha);
@@ -1136,31 +1265,38 @@ Param initialize_param(Network &net) {
             fan_out = net.nodes[j];
 
             // Compute variance
-            if (net.init_method.compare("Xavier") == 0) {
+            if (net.init_method.compare("Xavier") == 0)
+            {
                 scale = xavier_init(fan_in, fan_out);
-            } else {
+            }
+            else
+            {
                 scale = he_init(fan_in);
             }
 
             // Weight
-            if (net.num_weights[j] > 0) {
+            if (net.num_weights[j] > 0)
+            {
                 std::tie(mw_j, Sw_j) = gaussian_param_init(scale, net.gain_w[j],
                                                            net.num_weights[j]);
             }
 
             // Biases
-            if (net.num_biases[j] > 0) {
+            if (net.num_biases[j] > 0)
+            {
                 std::tie(mb_j, Sb_j) = gaussian_param_init(scale, net.gain_b[j],
                                                            net.num_biases[j]);
             }
         }
 
         // Push to main vector
-        if (net.num_weights[j] > 0) {
+        if (net.num_weights[j] > 0)
+        {
             push_back_with_idx(p.mw, mw_j, net.w_pos[j - 1]);
             push_back_with_idx(p.Sw, Sw_j, net.w_pos[j - 1]);
         }
-        if (net.num_biases[j] > 0) {
+        if (net.num_biases[j] > 0)
+        {
             push_back_with_idx(p.mb, mb_j, net.b_pos[j - 1]);
             push_back_with_idx(p.Sb, Sb_j, net.b_pos[j - 1]);
         }
@@ -1169,7 +1305,8 @@ Param initialize_param(Network &net) {
         if (net.shortcuts[j] > -1 &&
             (net.filters[net.shortcuts[j]] != net.filters[j] ||
              net.widths[net.shortcuts[j]] != net.widths[j] ||
-             net.heights[net.shortcuts[j]] != net.heights[j])) {
+             net.heights[net.shortcuts[j]] != net.heights[j]))
+        {
             std::vector<float> mw_sc_j;
             std::vector<float> Sw_sc_j;
             float scale_sc;
@@ -1178,9 +1315,12 @@ Param initialize_param(Network &net) {
 
             // Compute variance
             if (net.init_method.compare("Xavier") == 0 ||
-                net.init_method.compare("xavier") == 0) {
+                net.init_method.compare("xavier") == 0)
+            {
                 scale_sc = xavier_init(fan_in_sc, fan_out_sc);
-            } else {
+            }
+            else
+            {
                 scale_sc = he_init(fan_in_sc);
             }
 
@@ -1219,21 +1359,21 @@ void load_cfg(std::string net_file, Network &net)
 // TODO: Reduce repeated code
 {
     // Dictionary for the cfg file
-    std::string key_words[] = {"layers",         "nodes",
-                               "kernels",        "strides",
-                               "widths",         "heights",
-                               "filters",        "pads",
-                               "pad_types",      "shortcuts",
-                               "activations",    "batch_size",
-                               "sigma_v",        "decay_factor_sigma_v",
-                               "sigma_v_min",    "sigma_x",
-                               "init_method",    "is_full_cov",
-                               "noise_type",     "mu_v2b",
-                               "sigma_v2b",      "noise_gain",
+    std::string key_words[] = {"layers", "nodes",
+                               "kernels", "strides",
+                               "widths", "heights",
+                               "filters", "pads",
+                               "pad_types", "shortcuts",
+                               "activations", "batch_size",
+                               "sigma_v", "decay_factor_sigma_v",
+                               "sigma_v_min", "sigma_x",
+                               "init_method", "is_full_cov",
+                               "noise_type", "mu_v2b",
+                               "sigma_v2b", "noise_gain",
                                "multithreading", "collect_derivative",
-                               "input_seq_len",  "output_seq_len",
-                               "seq_stride",     "gain_w",
-                               "num_heads",      "timestep",
+                               "input_seq_len", "output_seq_len",
+                               "seq_stride", "gain_w",
+                               "num_heads", "timestep",
                                "head_size"};
     int num_keys = sizeof(key_words) / sizeof(key_words[0]);
 
@@ -1263,7 +1403,8 @@ void load_cfg(std::string net_file, Network &net)
     std::vector<int> v;
 
     // Open cfg file
-    while (std::getline(cfg_file, line)) {
+    while (std::getline(cfg_file, line))
+    {
         // Remove white space between characters
         std::string::iterator end_pos =
             std::remove(line.begin(), line.end(), ' ');
@@ -1272,222 +1413,311 @@ void load_cfg(std::string net_file, Network &net)
             std::remove(line.begin(), line.end(), '\t');
         line.erase(tab_pos, line.end());
 
-        for (int k = 0; k < num_keys; k++) {
+        for (int k = 0; k < num_keys; k++)
+        {
             // Key =  keyword + separator
             std::string key = key_words[k] + ":";
 
             // Find key in cfg file
             auto pos = line.find(key);
-            if (pos == 0) {
+            if (pos == 0)
+            {
                 // Store data
-                if (key_words[k] == "batch_size") {
+                if (key_words[k] == "batch_size")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> d;
                         net.batch_size = d;
                     }
-                } else if (key_words[k] == "sigma_v") {
+                }
+                else if (key_words[k] == "sigma_v")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> f;
                         net.sigma_v = f;
                     }
-                } else if (key_words[k] == "decay_factor_sigma_v") {
+                }
+                else if (key_words[k] == "decay_factor_sigma_v")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> f;
                         net.decay_factor_sigma_v = f;
                     }
-                } else if (key_words[k] == "sigma_v_min") {
+                }
+                else if (key_words[k] == "sigma_v_min")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> f;
                         net.sigma_v_min = f;
                     }
-                } else if (key_words[k] == "sigma_x") {
+                }
+                else if (key_words[k] == "sigma_x")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> f;
                         net.sigma_x = f;
                     }
-                } else if (key_words[k] == "omega_tol") {
+                }
+                else if (key_words[k] == "omega_tol")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> f;
                         net.omega_tol = f;
                     }
-                } else if (key_words[k] == "init_method") {
+                }
+                else if (key_words[k] == "init_method")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> si;
                         net.init_method = si;
                     }
-                } else if (key_words[k] == "is_full_cov") {
+                }
+                else if (key_words[k] == "is_full_cov")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> si;
-                        if (si.compare("true") == 0) {
+                        if (si.compare("true") == 0)
+                        {
                             net.is_full_cov = true;
-                        } else if (si.compare("true") == 0) {
+                        }
+                        else if (si.compare("true") == 0)
+                        {
                             net.is_full_cov = false;
-                        } else {
+                        }
+                        else
+                        {
                             throw std::invalid_argument(
                                 "Input must be true or false - is_full_cov");
                         }
                     }
-                } else if (key_words[k] == "noise_type") {
+                }
+                else if (key_words[k] == "noise_type")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> si;
                         net.noise_type = si;
                     }
-                } else if (key_words[k] == "mu_v2b") {
+                }
+                else if (key_words[k] == "mu_v2b")
+                {
                     std::stringstream ss(line.substr(pos + key.size() + 1));
                     std::vector<float> v;
-                    while (ss.good()) {
+                    while (ss.good())
+                    {
                         std::string tmp;
                         std::getline(ss, tmp, ',');
                         std::stringstream iss(tmp);
 
-                        if (iss >> f) {
+                        if (iss >> f)
+                        {
                             v.push_back(f);
                         }
                     }
                     net.mu_v2b = v;
-                } else if (key_words[k] == "sigma_v2b") {
+                }
+                else if (key_words[k] == "sigma_v2b")
+                {
                     std::stringstream ss(line.substr(pos + key.size() + 1));
                     std::vector<float> v;
-                    while (ss.good()) {
+                    while (ss.good())
+                    {
                         std::string tmp;
                         std::getline(ss, tmp, ',');
                         std::stringstream iss(tmp);
-                        if (iss >> f) {
+                        if (iss >> f)
+                        {
                             v.push_back(f);
                         }
                     }
                     net.sigma_v2b = v;
-                } else if (key_words[k] == "noise_gain") {
+                }
+                else if (key_words[k] == "noise_gain")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> f;
                         net.noise_gain = f;
                     }
-                } else if (key_words[k] == "multithreading") {
+                }
+                else if (key_words[k] == "multithreading")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> si;
-                        if (si.compare("true") == 0) {
+                        if (si.compare("true") == 0)
+                        {
                             net.multithreading = true;
-                        } else if (si.compare("false") == 0) {
+                        }
+                        else if (si.compare("false") == 0)
+                        {
                             net.multithreading = false;
-                        } else {
+                        }
+                        else
+                        {
                             throw std::invalid_argument(
                                 "Input must be true or false - multithreading");
                         }
                     }
-                } else if (key_words[k] == "collect_derivative") {
+                }
+                else if (key_words[k] == "collect_derivative")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> si;
-                        if (si.compare("true") == 0) {
+                        if (si.compare("true") == 0)
+                        {
                             net.collect_derivative = true;
-                        } else if (si.compare("false") == 0) {
+                        }
+                        else if (si.compare("false") == 0)
+                        {
                             net.collect_derivative = false;
-                        } else {
+                        }
+                        else
+                        {
                             throw std::invalid_argument(
                                 "Input must be true or false - "
                                 "collect_derivative");
                         }
                     }
-                } else if (key_words[k] == "input_seq_len") {
+                }
+                else if (key_words[k] == "input_seq_len")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> d;
                         net.input_seq_len = d;
                     }
-                } else if (key_words[k] == "output_seq_len") {
+                }
+                else if (key_words[k] == "output_seq_len")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> d;
                         net.output_seq_len = d;
                     }
-                } else if (key_words[k] == "seq_stride") {
+                }
+                else if (key_words[k] == "seq_stride")
+                {
                     std::stringstream ss(line.substr(pos + key.size()));
-                    if (ss.good()) {
+                    if (ss.good())
+                    {
                         ss >> d;
                         net.seq_stride = d;
                     }
-                } else if (key_words[k] == "gain_w") {
+                }
+                else if (key_words[k] == "gain_w")
+                {
                     std::stringstream ss(line.substr(pos + key.size() + 1));
                     std::vector<float> vf;
-                    while (ss.good()) {
+                    while (ss.good())
+                    {
                         // Remove comma between layers
                         std::string tmp;
                         std::getline(ss, tmp, ',');
                         std::stringstream iss(tmp);
 
                         // If string is dtype d, store in a container v
-                        if (iss >> f) {
+                        if (iss >> f)
+                        {
                             vf.push_back(f);
                         }
                     }
                     net.gain_w = vf;
-                } else if (key_words[k] == "num_heads") {
+                }
+                else if (key_words[k] == "num_heads")
+                {
                     std::stringstream ss(line.substr(pos + key.size() + 1));
                     std::vector<int> v;
-                    while (ss.good()) {
+                    while (ss.good())
+                    {
                         // Remove comma between layers
                         std::string tmp;
                         std::getline(ss, tmp, ',');
                         std::stringstream iss(tmp);
 
                         // If string is dtype d, store in a container v
-                        if (iss >> d) {
+                        if (iss >> d)
+                        {
                             v.push_back(d);
                         }
                     }
                     net.mha.num_heads = v;
-                } else if (key_words[k] == "timestep") {
+                }
+                else if (key_words[k] == "timestep")
+                {
                     std::stringstream ss(line.substr(pos + key.size() + 1));
                     std::vector<int> v;
-                    while (ss.good()) {
+                    while (ss.good())
+                    {
                         // Remove comma between layers
                         std::string tmp;
                         std::getline(ss, tmp, ',');
                         std::stringstream iss(tmp);
 
                         // If string is dtype d, store in a container v
-                        if (iss >> d) {
+                        if (iss >> d)
+                        {
                             v.push_back(d);
                         }
                     }
                     net.mha.timestep = v;
-                } else if (key_words[k] == "head_size") {
+                }
+                else if (key_words[k] == "head_size")
+                {
                     std::stringstream ss(line.substr(pos + key.size() + 1));
                     std::vector<int> v;
-                    while (ss.good()) {
+                    while (ss.good())
+                    {
                         // Remove comma between layers
                         std::string tmp;
                         std::getline(ss, tmp, ',');
                         std::stringstream iss(tmp);
 
                         // If string is dtype d, store in a container v
-                        if (iss >> d) {
+                        if (iss >> d)
+                        {
                             v.push_back(d);
                         }
                     }
                     net.mha.head_size = v;
-                } else {
+                }
+                else
+                {
                     std::stringstream ss(line.substr(pos + key.size() + 1));
                     std::vector<int> v;
-                    while (ss.good()) {
+                    while (ss.good())
+                    {
                         // Remove comma between layers
                         std::string tmp;
                         std::getline(ss, tmp, ',');
                         std::stringstream iss(tmp);
 
                         // If string is dtype d, store in a container v
-                        if (iss >> d) {
+                        if (iss >> d)
+                        {
                             v.push_back(d);
                         }
                     }
@@ -1500,7 +1730,8 @@ void load_cfg(std::string net_file, Network &net)
     }
 }
 
-void test_get_net_prop() {
+void test_get_net_prop()
+{
     Network net;
     net.layers = {2, 2, 4, 2, 4, 2, 4, 1, 1};
     net.nodes = {3072, 0, 0, 0, 0, 0, 0, 64, 11};
@@ -1538,7 +1769,8 @@ void test_get_net_prop() {
     print_matrix(net.similar_layers, 1, 9);
 }
 
-void test_initialize_param() {
+void test_initialize_param()
+{
     Network net;
     Param p;
     net.layers = {2, 2, 4, 2, 4, 2, 4, 1, 1};

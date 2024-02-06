@@ -5,25 +5,12 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Python: Current File",
-            "type": "python",
+            "name": "Python Debugger: Current File",
+            "type": "debugpy",
             "request": "launch",
             "program": "${file}",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "env": {
-                "PYTHONPATH": "${workspaceFolder}"
-            }
-        },
-        {
-            "name": "Launch (lldb)",
-            "type": "lldb",
-            "request": "launch",
-            "program": "${workspaceFolder}/build/main",
-            "args": [
-                "cfg_mnist_2fc.txt"
-            ],
-            "cwd": "${workspaceFolder}",
+            "justMyCode": false,
+            "console": "integratedTerminal"
         }
     ]
 }
