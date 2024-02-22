@@ -53,6 +53,9 @@ class Regression:
         num_data = input_data.shape[0]
         num_iter = int(num_data / batch_size)
         pbar = tqdm(range(self.num_epochs))
+        
+        # mse, rmse, ll epochlist initialization
+        mse_Epochlist, rmse_Epochlist, LL_Epochlist = [], [], []
         for epoch in pbar:
             # Decaying observation's variance
             self.net_prop.sigma_v = exponential_scheduler(
@@ -65,6 +68,7 @@ class Regression:
             V_batch = V_batch * 0.0 + self.net_prop.sigma_v**2
             # V_batch = self.net_prop.sigma_v**2
 
+            mse_list, rmse_list, LL_list = [], [], []
             for i in range(num_iter):
                 # Get data
                 idx = np.random.choice(num_data, size=batch_size)
@@ -117,6 +121,28 @@ class Regression:
                 pbar.set_description(
                     f"Epoch# {epoch: 0}|{i * batch_size + len(x_batch):>5}|{num_data: 1}\t log_lik: {log_lik:>7.2f}"
                 )
+                
+                
+                
+                
+                # save the values
+                # mse_list += [mse]
+                # rmse_list += [rmse]
+                # LL_list += [log_lik]
+            
+            # testing the model
+            mse_Epoch, LL_Epoch, rmse_Epoch = self.predict()
+            
+            mse_Epochlist +=[mse_Epoch]
+            rmse_Epochlist += [rmse_Epoch]
+            LL_Epochlist += [LL_Epoch]
+
+            # # saving the mean values for the metric for each epoch
+            # mse_Epoch = np.mean(mse_list)
+            # rmse_Epoch = np.mean(rmse_list)
+            # LL_Epoch = np.mean(LL_list)
+            
+        return mse_Epochlist, rmse_Epochlist, LL_Epochlist
 
     def predict(self, std_factor: int = 1) -> None:
         """Make prediction using TAGI"""
@@ -261,6 +287,6 @@ class Regression:
             np.zeros((batch_size, self.net_prop.nodes[-1]), dtype=self.dtype)
             + self.net_prop.sigma_v**2
         )
-        ud_idx_batch = np.zeros((batch_size, 0), dtype=np.int32)
+        ud_idx_batch = np.zeros((batch_size, 1), dtype=np.int32)
 
         return V_batch, ud_idx_batch

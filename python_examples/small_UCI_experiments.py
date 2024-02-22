@@ -6,21 +6,22 @@ import pandas as pd
 import numpy as np
 from typing import Union, Tuple
 from tqdm import tqdm
+import matplotlib.pyplot as plt
 # go one level down to import the data_loader and regression classes
 # os.chdir('..')
 import sys
 print(sys.path)
-sys.path.append('/Users/bhargobdeka/Desktop/cuTAGI') # always append the path to the root directory
+sys.path.append('/home/bd/projects/cuTAGI') # always append the path to the root directory
 
 from python_examples.data_loader import RegressionDataLoader
 from python_examples.regression import Regression
 from pytagi import NetProp
 
 ## Load the data
-data_names = ["Boston_housing","Concrete","Energy", "Yacht", "Wine"]
-# data_names = ["Boston_housing","Concrete","Energy", "Yacht", "Wine", \
-#               "Kin8nm","Naval",\
-#               "Power-plant","Protein"]
+data_names = ["Wine", \
+              "Kin8nm","Naval",\
+              "Power-plant","Protein"]
+# data_names = ["Boston_housing","Concrete","Energy", "Yacht"]
 
 for j in range(len(data_names)):
     
@@ -58,17 +59,20 @@ for j in range(len(data_names)):
     n_splits    = 20    # number of splits
     num_inputs  = len(index_features)     # 1 explanatory variable
     num_outputs = 1     # 1 predicted output
-    num_epochs  = 40     # row for 40 epochs
+    num_epochs  = 100     # row for 40 epochs
     BATCH_SIZE  = 10     # batch size
     num_hidden_layers = 50
     
     # Change batch size for wine and yacht
     if data_names[j] == "Yacht":
         BATCH_SIZE = 5
+    if data_names[j] == "Energy":
+        BATCH_SIZE = 10
     
     # Change number of splits for Protein data to 5
     if data_names[j] == "Protein":
         n_splits = 5
+        num_hidden_layers = 100
         
     # sigma V values for each dataset
     sigma_v_values = {"Boston_housing": 0.3, "Concrete": 0.3, "Energy": 0.1, "Yacht": 0.1, "Wine": 0.7, \
@@ -96,9 +100,9 @@ for j in range(len(data_names)):
             self.noise_gain     =  1.0
             # self.noise_type =   "homosce" # "heteros" or "homosce"
             self.init_method    =  "He"
-            self.device         =  "cpu"
+            self.device         =  "cpu" # cpu
 
-    ## Functions
+    ## Functions$
     def create_data_loader(raw_input: np.ndarray, raw_output: np.ndarray, batch_size) -> list:
             """Create dataloader based on batch size"""
             num_input_data = raw_input.shape[0]
@@ -143,6 +147,10 @@ for j in range(len(data_names)):
     log_lik_list = []
     rmse_list = []
     runtime_list = []
+    
+    # saving rmse and LL lists for each split
+    rmse_splitlist = []
+    LL_splitlist = []
     for i in range(n_splits):
         index_train = np.loadtxt(data_name +"/data/index_train_{}.txt".format(i)).astype(int)
         index_test = np.loadtxt(data_name +"/data/index_test_{}.txt".format(i)).astype(int)
@@ -222,7 +230,14 @@ for j in range(len(data_names)):
         
         # Train the network
         start_time = time.time()
-        reg_task.train()
+        _, rmse_Epochlist, LL_Epochlist = reg_task.train()
+        
+        # store rmse and LL lists for each split in rmse_splitlist and LL_splitlist
+        rmse_splitlist.append(rmse_Epochlist)
+        LL_splitlist.append(LL_Epochlist)
+        
+        # print(rmse_Epochlist)
+        # print(LL_Epochlist)
         # time to run max epochs
         runtime = time.time()-start_time
         
@@ -233,6 +248,35 @@ for j in range(len(data_names)):
         log_lik_list.append(log_lik)
         rmse_list.append(rmse)
         runtime_list.append(runtime)
+    
+    
+    mean_RMSE = np.mean(rmse_splitlist, axis=0)
+    mean_LL   = np.mean(LL_splitlist,axis=0)
+    # mean_RMSE = np.mean(rmsetests,axis=0)
+    # print("best LL"+str(mean_ll[-1]))
+    
+    # plot the mean RMSE and mean LL
+    
+    plt.plot(range(num_epochs), mean_RMSE)
+    plt.xlabel('Epochs')
+    plt.ylabel('RMSE')
+    plt.show()
+    
+    plt.plot(range(num_epochs), mean_LL)
+    plt.xlabel('Epochs')
+    plt.ylabel('Log-likelihood')
+    plt.show()
+    
+    fig, ax = plt.subplots(1, 2, figsize=(15, 5))
+    ax[0].plot(range(num_epochs), mean_RMSE)
+    ax[0].set_xlabel('Epochs')
+    ax[0].set_ylabel('RMSE')
+    ax[1].scatter(range(num_epochs), mean_LL)
+    ax[1].set_xlabel('Epochs')
+    ax[1].set_ylabel('Log-likelihood')
+    # set the main title for the figure
+    fig.suptitle(data_names[j])
+    plt.savefig("results_small_UCI_TAGI/"+data_names[j]+"/RMSE_LL.png")
 
     # Print the average results
     print("Average MSE: ", np.mean(mse_list))
