@@ -22,7 +22,7 @@ from pytagi import NetProp
 # data_names = ["Wine", \
 #               "Kin8nm","Naval",\
 #               "Power-plant","Protein"]
-data_names = ["elevators"]
+data_names = ["pol"]
 
 for j in range(len(data_names)):
     
@@ -47,11 +47,11 @@ for j in range(len(data_names)):
     data_name = 'data/UCI/' + data_names[j]
 
     # load data
-    data = np.loadtxt(data_name + '/data/data.txt')
+    data = np.loadtxt(data_name + '/data.txt')
 
     # We load the indexes for the features and for the target
-    index_features = np.loadtxt(data_name +'/data/index_features.txt').astype(int)
-    index_target   = np.loadtxt(data_name +'/data/index_target.txt').astype(int)
+    index_features = np.loadtxt(data_name +'/index_features.txt').astype(int)
+    index_target   = np.loadtxt(data_name +'/index_target.txt').astype(int)
 
     # print(index_features)
     # print(index_target)
@@ -59,13 +59,14 @@ for j in range(len(data_names)):
     # User-input (Default values)
     n_splits    = 10    # number of splits
     num_inputs  = len(index_features)     # 1 explanatory variable
-    num_outputs = 1     # 1 predicted output
-    num_epochs  = 100     # row for 40 epochs
+    num_outputs = 1      # 1 predicted output
+    num_epochs  = 200     # row for 40 epochs
     BATCH_SIZE  = 10     # batch size
     num_hidden_layers = 50
     
     # sigma V values for each dataset
-    NOISE_GAIN = {"elevators": 0.1}
+    OUT_GAIN = {"elevators": 0.1, "pol": 1, "skillcraft": 0.1}
+    NOISE_GAIN = {"elevators": 0.1, "pol": 0.1, "skillcraft": 0.1}
     
     # Input data and output data
     X = data[ : , index_features.tolist() ]
@@ -81,17 +82,22 @@ for j in range(len(data_names)):
         def __init__(self) -> None:
             super().__init__()
             self.layers         =  [1, 1, 1, 1, 1, 1]
-            self.nodes          =  [num_inputs, 1000, 1000, 500, 50, 2]  # output layer = [mean, std]
+            if data_names[j]=="skillcraft":
+                self.nodes          =  [num_inputs, 1000, 500, 50, 2]  # output layer = [mean, std]
+            else:
+                self.nodes          =  [num_inputs, 1000, 1000, 500, 50, 2]  # output layer = [mean, std]
+            
             self.activations    =  [0, 4, 4, 4, 0]
             self.batch_size     =  BATCH_SIZE
             self.sigma_v        =  0 # sigma_v_values[data_names[j]]
             self.sigma_v_min    =  0
+            self.out_gain       = OUT_GAIN[data_names[j]]
             self.noise_gain     =  NOISE_GAIN[data_names[j]]
             self.noise_type     =   "heteros" # "heteros" or "homosce"
             self.init_method    =  "He"
             self.device         =  "cuda" # cpu, cuda
 
-    ## Functions$
+    ## Functions
     def create_data_loader(raw_input: np.ndarray, raw_output: np.ndarray, batch_size) -> list:
             """Create dataloader based on batch size"""
             num_input_data = raw_input.shape[0]
@@ -135,11 +141,13 @@ for j in range(len(data_names)):
     mse_list = []
     log_lik_list = []
     rmse_list = []
+    normal_log_lik_list = []
     runtime_list = []
     
     # saving rmse and LL lists for each split
     rmse_splitlist = []
     LL_splitlist = []
+    normal_LL_splitlist = []
     for i in range(n_splits):
         
         # Split the data
@@ -205,11 +213,12 @@ for j in range(len(data_names)):
         
         # Train the network
         start_time = time.time()
-        _, rmse_Epochlist, LL_Epochlist = reg_task.train()
+        _, rmse_Epochlist, LL_Epochlist, normal_LL_Epochlist = reg_task.train()
         
         # store rmse and LL lists for each split in rmse_splitlist and LL_splitlist
         rmse_splitlist.append(rmse_Epochlist)
         LL_splitlist.append(LL_Epochlist)
+        normal_LL_splitlist.append(normal_LL_Epochlist)
         
         # print(rmse_Epochlist)
         # print(LL_Epochlist)
@@ -217,27 +226,27 @@ for j in range(len(data_names)):
         runtime = time.time()-start_time
         
         # Predict for one split
-        mse, log_lik, rmse = reg_task.predict()
+        mse, log_lik, rmse, normal_LL = reg_task.predict()
         # Store the results
         mse_list.append(mse)
         log_lik_list.append(log_lik)
         rmse_list.append(rmse)
+        normal_log_lik_list.append(normal_LL)
         runtime_list.append(runtime)
     
     
     mean_RMSE = np.mean(rmse_splitlist, axis=0)
-    mean_LL   = np.mean(LL_splitlist,axis=0)
+    mean_normal_LL   = np.mean(normal_LL_splitlist,axis=0)
     # mean_RMSE = np.mean(rmsetests,axis=0)
     # print("best LL"+str(mean_ll[-1]))
     
     # plot the mean RMSE and mean LL
-    
     plt.plot(range(num_epochs), mean_RMSE)
     plt.xlabel('Epochs')
     plt.ylabel('RMSE')
     plt.show()
     
-    plt.plot(range(num_epochs), mean_LL)
+    plt.plot(range(num_epochs), mean_normal_LL)
     plt.xlabel('Epochs')
     plt.ylabel('Log-likelihood')
     plt.show()
@@ -246,7 +255,7 @@ for j in range(len(data_names)):
     ax[0].plot(range(num_epochs), mean_RMSE)
     ax[0].set_xlabel('Epochs')
     ax[0].set_ylabel('RMSE')
-    ax[1].scatter(range(num_epochs), mean_LL)
+    ax[1].scatter(range(num_epochs), mean_normal_LL)
     ax[1].set_xlabel('Epochs')
     ax[1].set_ylabel('Log-likelihood')
     # set the main title for the figure
@@ -255,7 +264,7 @@ for j in range(len(data_names)):
 
     # Print the average results
     print("Average MSE: ", np.mean(mse_list))
-    print("Average Log-likelihood: ", np.mean(log_lik_list))
+    print("Average Log-likelihood: ", np.mean(normal_log_lik_list))
     print("Average RMSE: ", np.mean(rmse_list))
     print("Average Runtime: ", np.mean(runtime_list))
     

@@ -26,6 +26,16 @@ def log_likelihood(
 
     return np.nanmean(log_lik)
 
+def normalized_log_likelihood(
+    prediction: np.ndarray, observation: np.ndarray, std: np.ndarray
+) -> float:
+    """Compute the normalized log-likelihood"""
+
+    log_lik = -0.5 * np.log(2 * np.pi * (std**2)) - 0.5 * (
+        ((observation - prediction) / std) ** 2
+    )
+
+    return np.nanmean(log_lik) / len(observation)
 
 def rmse(prediction: np.ndarray, observation: np.ndarray) -> None:
     """Root mean squared error"""

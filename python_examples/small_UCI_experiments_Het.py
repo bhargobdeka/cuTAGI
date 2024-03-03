@@ -21,7 +21,7 @@ from pytagi import NetProp
 # data_names = ["Wine", \
 #               "Kin8nm","Naval",\
 #               "Power-plant","Protein"]
-data_names = ["Boston_housing", "Concrete", "Energy", "Yacht", "Wine", "Kin8nm","Naval", "Power-plant","Protein"]
+data_names = ["Boston_housing"] # "Concrete", "Energy", "Yacht", "Wine", "Kin8nm","Naval", "Power-plant","Protein"
 
 for j in range(len(data_names)):
     
@@ -41,6 +41,8 @@ for j in range(len(data_names)):
     RESULTS_RMSEtest = "results_small_UCI_TAGI_AGVI_Het/"+data_names[j]+"/RMSEtest.txt"
     RESULTS_LLtest = "results_small_UCI_TAGI_AGVI_Het/"+data_names[j]+"/LLtest.txt"
     RESULTS_RUNTIME = "results_small_UCI_TAGI_AGVI_Het/"+data_names[j]+"/runtime_train.txt"
+    RESULTS_LL_learning_curve = "results_small_UCI_TAGI_AGVI_Het/"+data_names[j]+"/learning_curve_LL.txt"
+    RESULTS_RMSE_learning_curve = "results_small_UCI_TAGI_AGVI_Het/"+data_names[j]+"/learning_curve_RMSE.txt"
 
     # getting data name
     data_name = 'data/UCI/' + data_names[j]
@@ -60,10 +62,12 @@ for j in range(len(data_names)):
     num_inputs  = len(index_features)     # 1 explanatory variable
     num_outputs = 1     # 1 predicted output
     num_epochs  = 100     # row for 40 epochs
-    BATCH_SIZE  = 10     # batch size
+    BATCH_SIZE  = 32     # batch size
     num_hidden_layers = 50
     
-    # sigma V values for each dataset
+    # Gain values for each dataset
+    OUT_GAIN = {"Boston_housing": 0.5, "Concrete": 0.5, "Energy": 0.5, "Yacht": 1, "Wine": 0.1, \
+                        "Kin8nm": 0.5, "Naval": 0.5, "Power-plant": 0.5, "Protein": 0.5}
     NOISE_GAIN = {"Boston_housing": 0.1, "Concrete": 0.05, "Energy": 0.1, "Yacht": 0.1, "Wine": 0.01, \
                         "Kin8nm": 0.1, "Naval": 0.01, "Power-plant": 0.001, "Protein": 0.1}
     
@@ -98,6 +102,7 @@ for j in range(len(data_names)):
             self.batch_size     =  BATCH_SIZE
             self.sigma_v        =  0 # sigma_v_values[data_names[j]]
             self.sigma_v_min    =  0
+            self.out_gain       = OUT_GAIN[data_names[j]]
             self.noise_gain     =  NOISE_GAIN[data_names[j]]
             self.noise_type     =   "heteros" # "heteros" or "homosce"
             self.init_method    =  "He"
@@ -231,7 +236,7 @@ for j in range(len(data_names)):
         
         # Train the network
         start_time = time.time()
-        _, rmse_Epochlist, LL_Epochlist = reg_task.train()
+        _, rmse_Epochlist, LL_Epochlist, _ = reg_task.train()
         
         # store rmse and LL lists for each split in rmse_splitlist and LL_splitlist
         rmse_splitlist.append(rmse_Epochlist)
@@ -243,7 +248,7 @@ for j in range(len(data_names)):
         runtime = time.time()-start_time
         
         # Predict for one split
-        mse, log_lik, rmse = reg_task.predict()
+        mse, log_lik, rmse, _ = reg_task.predict()
         # Store the results
         mse_list.append(mse)
         log_lik_list.append(log_lik)
@@ -292,6 +297,10 @@ for j in range(len(data_names)):
         file.write(str(np.mean(log_lik_list)) + "\n")
     with open(RESULTS_RUNTIME, "a") as file:
         file.write(str(np.mean(runtime_list)) + "\n")
+    with open(RESULTS_LL_learning_curve, "a") as file:
+        file.write(str(mean_LL) + "\n")
+    with open(RESULTS_RMSE_learning_curve, "a") as file:
+        file.write(str(mean_RMSE) + "\n")
     
 
 

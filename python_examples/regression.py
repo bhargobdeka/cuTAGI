@@ -55,7 +55,7 @@ class Regression:
         pbar = tqdm(range(self.num_epochs))
         
         # mse, rmse, ll epochlist initialization
-        mse_Epochlist, rmse_Epochlist, LL_Epochlist = [], [], []
+        mse_Epochlist, rmse_Epochlist, LL_Epochlist, normal_LL_Epochlist = [], [], [], []
         for epoch in pbar:
             # Decaying observation's variance
             self.net_prop.sigma_v = exponential_scheduler(
@@ -97,10 +97,18 @@ class Regression:
                 # print(f"The normalized predictions are: {norm_pred}")
                 # print(f"The variance predictions are: {v_pred}")
                 
+                # normalized log-likelihood
+                # normal_log_lik = metric.log_likelihood(
+                #     prediction=pred, observation=obs, std=np.sqrt(v_pred)
+                # )
+                
                 pred = normalizer.unstandardize(
                     norm_data=norm_pred,
                     mu=self.data_loader["y_norm_param_1"],
                     std=self.data_loader["y_norm_param_2"],
+                )
+                std_pred = normalizer.unstandardize_std(
+                    norm_std=np.sqrt(v_pred), std=self.data_loader["y_norm_param_2"]
                 )
                 obs = normalizer.unstandardize(
                     norm_data=y_batch,
@@ -110,7 +118,7 @@ class Regression:
                 mse = metric.mse(pred, obs)
                 rmse = mse**0.5
                 log_lik = metric.log_likelihood(
-                    prediction=pred, observation=obs, std=np.sqrt(v_pred)
+                    prediction=pred, observation=obs, std=std_pred
                 )
                 pbar.set_description(
                     f"Epoch# {epoch: 0}|{i * batch_size + len(x_batch):>5}|{num_data: 1}\t mse: {mse:>7.2f}"
@@ -131,18 +139,19 @@ class Regression:
                 # LL_list += [log_lik]
             
             # testing the model
-            mse_Epoch, LL_Epoch, rmse_Epoch = self.predict()
+            mse_Epoch, LL_Epoch, rmse_Epoch, normal_LL_Epoch = self.predict()
             
             mse_Epochlist +=[mse_Epoch]
             rmse_Epochlist += [rmse_Epoch]
             LL_Epochlist += [LL_Epoch]
+            normal_LL_Epochlist += [normal_LL_Epoch]
 
             # # saving the mean values for the metric for each epoch
             # mse_Epoch = np.mean(mse_list)
             # rmse_Epoch = np.mean(rmse_list)
             # LL_Epoch = np.mean(LL_list)
             
-        return mse_Epochlist, rmse_Epochlist, LL_Epochlist
+        return mse_Epochlist, rmse_Epochlist, LL_Epochlist, normal_LL_Epochlist
 
     def predict(self, std_factor: int = 1) -> None:
         """Make prediction using TAGI"""
@@ -168,6 +177,11 @@ class Regression:
         std_predictions = (np.stack(variance_predictions).flatten()) ** 0.5
         y_test = np.stack(y_test).flatten()
         x_test = np.stack(x_test).flatten()
+        
+        # normalised log-likelihood
+        normal_log_lik = metric.log_likelihood(
+            prediction=mean_predictions, observation=y_test, std=std_predictions
+        )
 
         # Unnormalization
         mean_predictions = normalizer.unstandardize(
@@ -216,7 +230,7 @@ class Regression:
         print(f"Log-likelihood: {log_lik: 0.2f}")
         print(f"RMSE          : {rmse: 0.2f}")
         
-        return mse, log_lik, rmse
+        return mse, log_lik, rmse, normal_log_lik
     
     def compute_derivatives(
         self, layer: int = 0, truth_derv_file: Union[None, str] = None

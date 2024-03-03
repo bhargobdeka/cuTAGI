@@ -18,7 +18,7 @@ from python_examples.regression import Regression
 from pytagi import NetProp
 
 ## Load the data
-data_names = ["Wine", \
+data_names = ["Boston_housing","Concrete","Energy", "Yacht", "Wine", \
               "Kin8nm","Naval",\
               "Power-plant","Protein"]
 # data_names = ["Boston_housing","Concrete","Energy", "Yacht"]
@@ -74,7 +74,7 @@ for j in range(len(data_names)):
         n_splits = 5
         num_hidden_layers = 100
         
-    # sigma V values for each dataset
+    # sigma V values for each dataset obtained via grid-search
     sigma_v_values = {"Boston_housing": 0.3, "Concrete": 0.3, "Energy": 0.1, "Yacht": 0.1, "Wine": 0.7, \
                         "Kin8nm": 0.3, "Naval": 0.6, "Power-plant": 0.2, "Protein": 0.7}
 
@@ -230,7 +230,7 @@ for j in range(len(data_names)):
         
         # Train the network
         start_time = time.time()
-        _, rmse_Epochlist, LL_Epochlist = reg_task.train()
+        _, rmse_Epochlist, LL_Epochlist, _ = reg_task.train()
         
         # store rmse and LL lists for each split in rmse_splitlist and LL_splitlist
         rmse_splitlist.append(rmse_Epochlist)
@@ -242,7 +242,7 @@ for j in range(len(data_names)):
         runtime = time.time()-start_time
         
         # Predict for one split
-        mse, log_lik, rmse = reg_task.predict()
+        mse, log_lik, rmse, _ = reg_task.predict()
         # Store the results
         mse_list.append(mse)
         log_lik_list.append(log_lik)

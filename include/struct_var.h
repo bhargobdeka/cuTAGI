@@ -236,6 +236,7 @@ struct Network {
     float sigma_v = 0.0f;
     float sigma_x = 0.0f;
     std::string noise_type = "none";
+    float out_gain = 0.5f;
     float noise_gain = 0.5f;
     std::vector<float> mu_v2b;
     std::vector<float> sigma_v2b;
@@ -447,7 +448,7 @@ struct NetConfig {
     std::vector<int> layers, nodes, kernels, strides, widths, heights, filters,
         pads, pad_types, shortcuts, activations;
     std::vector<float> mu_v2b, sigma_v2b;
-    float sigma_v, sigma_v_min, sigma_x, decay_factor_sigma_v, noise_gain;
+    float sigma_v, sigma_v_min, sigma_x, decay_factor_sigma_v, out_gain, noise_gain;
     int batch_size, input_seq_len, output_seq_len, seq_stride;
     bool multithreading = true, collect_derivative = false, is_full_cov = false;
     std::string init_method = "Xavier", noise_type = "none", device = "cpu";
